@@ -5,6 +5,8 @@ from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+import uvicorn
+
 
 templates = Jinja2Templates(directory="./chatapp")
 
@@ -62,3 +64,7 @@ def chat(cm: ChatModel):
         return "No index found"
 
     return bot.reply(question=query)
+
+
+if __name__ == "__main__":
+    uvicorn.run(app, host="0.0.0.0", port=8080)
