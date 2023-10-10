@@ -1,0 +1,43 @@
+<style>
+    body {
+        font-family: Lato;
+    }
+</style>
+
+<h1>📇 Indexer</h1>
+
+<input type="file" id="fileInput" accept="application/pdf" />
+<button id="uploadButton">Upload</button>
+<p id="status"></p>
+<script>
+    document.getElementById('uploadButton').addEventListener('click', function () {
+        const fileInput = document.getElementById('fileInput');
+        const file = fileInput.files[0];
+        document.getElementById('status').innerHTML = "Indexing..."
+        if (file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/index', {
+                method: 'POST',
+                body: formData,
+            })
+                .then(response => {
+                    if (response.ok) {
+                        // Handle success
+                        console.log('File uploaded successfully.');
+                        document.getElementById('status').innerHTML = "<h2>Indexing successful 🚀</h2><a href='/'>Start chatting!</a>"
+                    } else {
+                        // Handle errors
+                        console.error('File upload failed.');
+                    }
+                })
+                .catch(error => {
+                    // Handle network or other errors
+                    console.error('Error:', error);
+                });
+        } else {
+            console.error('No file selected.');
+        }
+    });
+</script>

@@ -1,0 +1,6 @@
+langchain==0.0.213
+pypdf==3.16.2
+openai==0.28.1
+tiktoken==0.5.1
+chromadb==0.3.26
+langchain[docarray]
