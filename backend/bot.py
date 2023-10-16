@@ -90,7 +90,7 @@ class Bot:
     def reply(self, question: str):
         result = self.qa({"question": question})
         sources = [
-            str([result["source_documents"][i].metadata["page"]]) for i in range(2)
+            str([result["source_documents"][i].metadata["page"] + 1]) for i in range(2)
         ]
 
         return (
