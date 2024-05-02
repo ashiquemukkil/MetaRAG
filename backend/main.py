@@ -22,11 +22,11 @@ class ChatModel(BaseModel):
 try:
     app.mount(
         "/static",
-        StaticFiles(directory="../frontend", html=True),
+        StaticFiles(directory="frontend", html=True),
         name="static",
     )
 
-    templates = Jinja2Templates(directory="../frontend")
+    templates = Jinja2Templates(directory="frontend")
 except RuntimeError:
     pass
 
@@ -67,4 +67,5 @@ def chat(cm: ChatModel):
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8080)
+    uvicorn.run(app)
+    # uvicorn.run(app, host="0.0.0.0", port=8081)

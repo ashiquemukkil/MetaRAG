@@ -2,7 +2,8 @@ import openai
 import sys
 import os
 
-os.environ["OPENAI_API_KEY"] = "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"
+
+os.environ["OPENAI_API_KEY"] = "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"
 
 sys.path.append("../..")
 

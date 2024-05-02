@@ -2,9 +2,11 @@ from langchain.document_loaders import PyPDFLoader
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
-from langchain.chat_models import ChatOpenAI
+# from langchain.chat_models import ChatOpenAI
+from backend.llama2 import SaladChatOllama
 
-from langchain.embeddings.openai import OpenAIEmbeddings
+# from langchain.embeddings.openai import OpenAIEmbeddings
+from backend.llama2 import SaladOllamaEmbeddings
 from langchain.vectorstores import Chroma
 import settings
 import uuid
@@ -12,10 +14,29 @@ import os
 
 from langchain.prompts import PromptTemplate
 
-template = """Use the following pieces of context to answer the question at the end. If you don't know the answer, just say that you don't know, don't try to make up an answer. Use three sentences maximum. Keep the answer as concise as possible. Be polite, and use emojis in your answers.
+# template = """Use the following pieces of context to answer the question at the end. 
+# If you don't know the answer, just say that you don't know, don't try to make up an answer. 
+# Use three sentences maximum. Keep the answer as concise as possible. Be polite, and use emojis in your answers.
+# {context}
+# Question: {question}
+# Helpful Answer:"""
+
+
+template = """You are a finance executive.
+Use the following pieces of context to answer the question at the end. 
+If you don't know the answer, just say that you don't know, don't try to make up an answer. 
+Use three sentences maximum. Keep the answer as concise as possible. 
+Be polite, and use emojis in your answers.
+
+Make sure your answers are factually correct and not estimated based on similar terms.
+You must not to addition, subtraction in two numbers to get the third number (i.e. to get profit subtracting cost from revenue or to get EBIDTA adding taxes or interest, etc.). 
+Understand the difference between terms like gross margin, net profit, revenue, net margin, and so on.
+E.g., if you are asked about the net profit you must only answer if it's there. 
+
 {context}
 Question: {question}
 Helpful Answer:"""
+
 
 QA_CHAIN_PROMPT = PromptTemplate.from_template(template)
 
@@ -47,7 +68,7 @@ class PDFIndexer:
         documents = splitter.split_documents(pages)
 
         persist_directory = f"docs/{self.uid}/chroma"
-        embedding = OpenAIEmbeddings()
+        embedding = SaladOllamaEmbeddings()
         vdb = Chroma.from_documents(
             documents=documents,
             embedding=embedding,
@@ -65,7 +86,7 @@ class Bot:
     @property
     def _llm(self):
         llm_name = "gpt-3.5-turbo"
-        llm = ChatOpenAI(model_name=llm_name, temperature=0)
+        llm = SaladChatOllama(model_name=llm_name, temperature=0)
         return llm
 
     @property
