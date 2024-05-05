@@ -15,6 +15,7 @@ os.environ["LANGCHAIN_API_KEY"] = "ls__446246ca5f6744558aedc927aa852c05"  # Upda
 SALAD_API_KEY = "c598a341-4139-4e45-92e6-2880fbd61425"
 SALAD_BASE_URL = 'https://sesame-panzanella-rzl32icxd728lczq.salad.cloud'
 
+MODEL = "llama2"
 class SaladChatOllama(ChatOllama):
     base_url: str = SALAD_BASE_URL
 

@@ -3,7 +3,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.memory import ConversationBufferMemory
 from langchain.chains import ConversationalRetrievalChain
 # from langchain.chat_models import ChatOpenAI
-from backend.llama2 import SaladChatOllama
+from backend.llama2 import SaladChatOllama,MODEL
 
 # from langchain.embeddings.openai import OpenAIEmbeddings
 from backend.llama2 import SaladOllamaEmbeddings
@@ -11,6 +11,9 @@ from langchain.vectorstores import Chroma
 import settings
 import uuid
 import os
+import logging
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 from langchain.prompts import PromptTemplate
 
@@ -68,10 +71,17 @@ class PDFIndexer:
         documents = splitter.split_documents(pages)
 
         persist_directory = f"docs/{self.uid}/chroma"
-        embedding = SaladOllamaEmbeddings()
-        vdb = Chroma.from_documents(
-            documents=documents,
-            embedding=embedding,
+        embedding = SaladOllamaEmbeddings(model=MODEL)
+ 
+        for index,document in enumerate(documents):
+            Chroma.from_documents(
+                documents=[document],
+                embedding=embedding,
+                persist_directory=persist_directory,
+            )
+            logging.info(f"Logs for document {index + 1}: {document.metadata}")
+        vdb = Chroma(
+            embedding_function=embedding,
             persist_directory=persist_directory,
         )
 
@@ -85,7 +95,7 @@ class Bot:
 
     @property
     def _llm(self):
-        llm_name = "gpt-3.5-turbo"
+        llm_name = MODEL
         llm = SaladChatOllama(model_name=llm_name, temperature=0)
         return llm
 
@@ -97,7 +107,7 @@ class Bot:
         memory.input_key = "question"
         memory.output_key = "answer"
         retriever = self.vdb.as_retriever()
-
+    
         qa = ConversationalRetrievalChain.from_llm(
             self._llm,
             retriever=retriever,
@@ -105,16 +115,21 @@ class Bot:
             combine_docs_chain_kwargs={"prompt": QA_CHAIN_PROMPT},
             return_source_documents=True,
         )
-
         return qa
 
     def reply(self, question: str):
         result = self.qa({"question": question})
-        sources = [
-            str([result["source_documents"][i].metadata["page"] + 1]) for i in range(2)
-        ]
+
+        if result["source_documents"]:
+            sources = [
+                str([result["source_documents"][i].metadata["page"] + 1]) for i in range(2)
+            ]
+        else:
+            sources = ""
 
         return (
             result["answer"]
             + f"<br>🔗<span style='color:1DB100;font-size:12px'>{' '.join(sources)}</span>"
         )
+    
+    
