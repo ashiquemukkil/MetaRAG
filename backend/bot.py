@@ -36,6 +36,8 @@ You must not to addition, subtraction in two numbers to get the third number (i.
 Understand the difference between terms like gross margin, net profit, revenue, net margin, and so on.
 E.g., if you are asked about the net profit you must only answer if it's there. 
 
+If Question is greeting don't consisder context
+
 {context}
 Question: {question}
 Helpful Answer:"""
@@ -72,18 +74,18 @@ class PDFIndexer:
 
         persist_directory = f"docs/{self.uid}/chroma"
         embedding = SaladOllamaEmbeddings(model=MODEL)
- 
-        for index,document in enumerate(documents):
-            Chroma.from_documents(
-                documents=[document],
-                embedding=embedding,
-                persist_directory=persist_directory,
-            )
-            logging.info(f"Logs for document {index + 1}: {document.metadata}")
+
         vdb = Chroma(
             embedding_function=embedding,
             persist_directory=persist_directory,
         )
+        
+
+        for index,document in enumerate(documents):
+            vdb.add_documents(documents=[document], embedding=embedding)
+            vdb.persist()
+            logging.info(f"Logs for document {index + 1}: {document.metadata}")
+        
 
         return vdb
 
@@ -106,8 +108,9 @@ class Bot:
         )
         memory.input_key = "question"
         memory.output_key = "answer"
-        retriever = self.vdb.as_retriever()
-    
+        retriever = self.vdb.as_retriever(score_threshold=.4)
+
+        
         qa = ConversationalRetrievalChain.from_llm(
             self._llm,
             retriever=retriever,
